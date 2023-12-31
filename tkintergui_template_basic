@@ -1,0 +1,55 @@
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
+import os
+
+'''
+this is the main tkinter gui layout making the buttons 
+that the rest of the app will build from 
+'''
+
+# Function to open a file dialog and select a CSV file
+def select_file():
+    filetypes = (('CSV files', '*.csv'), ('All files', '*.*'))
+    filename = filedialog.askopenfilename(title='Open a file', initialdir='/', filetypes=filetypes)
+    if filename:
+        file_path.set(filename)
+
+# Function to confirm the file selection and proceed
+def confirm_selection():
+    if file_path.get():
+        # File path is set, proceed with parsing (functionality to be added later)
+        # For now, just show a confirmation message
+        messagebox.showinfo('Confirmation', 'You have selected the file: ' + file_path.get())
+    else:
+        messagebox.showwarning('Warning', 'Please select a CSV file first.')
+
+# Create the main application window
+app = tk.Tk()
+app.title('CSV to SQLite Converter')
+
+# StringVar to store the path of the selected file
+file_path = tk.StringVar(app)
+
+# Frame for the file selection
+frame_file_selection = tk.Frame(app, pady=10)
+frame_file_selection.pack(fill='x', padx=15)
+
+# Label, entry and button for file selection
+label_file = tk.Label(frame_file_selection, text='Select CSV File:', anchor='w')
+label_file.pack(side='left', padx=5)
+
+entry_file = tk.Entry(frame_file_selection, textvariable=file_path, width=50)
+entry_file.pack(side='left', expand=True, fill='x', padx=5)
+
+button_browse = tk.Button(frame_file_selection, text='Browse', command=select_file)
+button_browse.pack(side='right', padx=5)
+
+# Frame for the confirm button
+frame_confirm = tk.Frame(app, pady=10)
+frame_confirm.pack(fill='x', padx=15)
+
+button_confirm = tk.Button(frame_confirm, text='Confirm Selection', command=confirm_selection)
+button_confirm.pack(side='right', padx=5)
+
+# Run the application
+app.mainloop()
