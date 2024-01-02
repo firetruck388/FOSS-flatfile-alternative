@@ -160,7 +160,6 @@ def prepare_data_type_selection():
             messagebox.showerror('Error', f'An error occurred: {e}')
 
 # Function to confirm the data type selections
-# Adjust the confirm_data_types function to call parse_csv_and_create_database
 def confirm_data_types():
     selected_data_types = {header: var.get() for header, var in data_types.items()}
     messagebox.showinfo('Data Types Selected', str(selected_data_types))
