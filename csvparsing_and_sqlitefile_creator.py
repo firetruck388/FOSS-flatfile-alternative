@@ -67,11 +67,15 @@ def perform_integrity_check(session, table, csv_path):
 
 # Function to parse the CSV and create the database
 def parse_csv_and_create_database(selected_data_types):
+    # Generate a datetime stamp for the database filename with milliseconds
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")[:17]  # Slice to get YYYYMMDDHHMMSSmmm
+    database_filename = f"mydatabase_{timestamp}.db"
+
     # Create the SQLAlchemy table definition
     table = create_table_definition(selected_data_types)
 
     # Connect to the SQLite database using SQLAlchemy
-    engine = create_engine('sqlite:///mydatabase.db')  # Change to ':memory:' for an in-memory database
+    engine = create_engine(f'sqlite:///{database_filename}')  # Database filename includes timestamp
     table.metadata.create_all(engine)
 
     # Create a session to interact with the database
