@@ -1,12 +1,13 @@
 import tkinter as tk
 import csv
 from tkinter import filedialog, messagebox, ttk
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Float, Boolean, DateTime
-from sqlalchemy.orm import sessionmaker, registry
-import os
-import uuid  # Make sure to import uuid here
+from sqlalchemy import create_engine, MetaData, Column, Integer, String, Float, Boolean, DateTime
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base
+import uuid
 from datetime import datetime
 
+Base = declarative_base()
 
 # SQLAlchemy data type mapping
 sqlalchemy_data_types = {
@@ -17,27 +18,30 @@ sqlalchemy_data_types = {
     'datetime': DateTime
 }
 
-# Define a generic class to map to the SQLite table
-class Record(object):
-    pass
-
-# Create a registry instance
-mapper_registry = registry()
+# Global metadata instance
+metadata = MetaData()
 
 # Function to create the SQLAlchemy table definition
 def create_table_definition(selected_data_types):
-    metadata = MetaData()
-    columns = [Column('id', String, primary_key=True)]  # Add a primary key column for the UUID
-    for header, data_type in selected_data_types.items():
-        columns.append(Column(header, sqlalchemy_data_types[data_type.lower()]))
-    table = Table('data', metadata, *columns)
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    class_name = f"Record_{timestamp}"
+    columns = {'__tablename__': f'data_{timestamp}',
+               'id': Column(String, primary_key=True)}
 
-    # Use the new map_imperatively method
-    mapper_registry.map_imperatively(Record, table)
-    return table
+    for header, data_type in selected_data_types.items():
+        columns[header] = Column(sqlalchemy_data_types[data_type.lower()])
+
+    # Dynamically create a new class for each table
+    RecordClass = type(class_name, (Base,), columns)
+
+    # Create the table in the metadata
+    Base.metadata.create_all(metadata.bind)
+
+    return RecordClass
+
 
 # Function to perform a basic check of the table and data
-def perform_integrity_check(session, table, csv_path):
+def perform_integrity_check(session, RecordClass, csv_path):
     try:
         # Count the rows in the CSV file
         with open(csv_path, 'r', newline='') as csvfile:
@@ -45,7 +49,7 @@ def perform_integrity_check(session, table, csv_path):
             csv_row_count = sum(1 for row in reader) - 1  # Exclude header row
 
         # Count the rows in the database table using the session
-        db_row_count = session.query(table).count()
+        db_row_count = session.query(RecordClass).count()
 
         # Verify that the number of rows matches
         if csv_row_count != db_row_count:
@@ -53,7 +57,7 @@ def perform_integrity_check(session, table, csv_path):
                 f"Row count mismatch: CSV has {csv_row_count} rows, but the database has {db_row_count} rows.")
 
         # If row counts match, fetch a sample to ensure the table is not empty
-        result = session.query(table).limit(5).all()
+        result = session.query(RecordClass).limit(5).all()
         if not result:
             raise ValueError("The table is empty. No data was inserted despite row counts matching.")
 
@@ -71,12 +75,12 @@ def parse_csv_and_create_database(selected_data_types):
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")[:17]  # Slice to get YYYYMMDDHHMMSSmmm
     database_filename = f"mydatabase_{timestamp}.db"
 
-    # Create the SQLAlchemy table definition
-    table = create_table_definition(selected_data_types)
+    # Create the SQLAlchemy engine and metadata object
+    engine = create_engine(f'sqlite:///{database_filename}')
+    metadata.bind = engine
 
-    # Connect to the SQLite database using SQLAlchemy
-    engine = create_engine(f'sqlite:///{database_filename}')  # Database filename includes timestamp
-    table.metadata.create_all(engine)
+    # Call the function to dynamically create a class mapped to the table
+    RecordClass = create_table_definition(selected_data_types)
 
     # Create a session to interact with the database
     Session = sessionmaker(bind=engine)
@@ -86,7 +90,7 @@ def parse_csv_and_create_database(selected_data_types):
     with open(file_path.get(), 'r', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            record = Record()
+            record = RecordClass()  # Use the dynamically created RecordClass here
             record.id = str(uuid.uuid4())  # Assign a UUID for the primary key
             for header, value in row.items():
                 # If the column is a datetime type, convert the string to a datetime object
@@ -101,14 +105,14 @@ def parse_csv_and_create_database(selected_data_types):
             session.add(record)  # Add the record to the session
 
     # After insertion, perform a basic integrity check
-    perform_integrity_check(session, table, file_path.get())
+    perform_integrity_check(session, RecordClass, file_path.get())
 
     # Commit the session and close the connection
     session.commit()
     session.close()
 
     # Inform the user that the database has been created
-    messagebox.showinfo('Success', 'The SQLite database has been created successfully with SQLAlchemy.')
+    messagebox.showinfo('Success', f'The SQLite database "{database_filename}" has been created successfully.')
 
 
 # Function to open a file dialog and select a CSV file
