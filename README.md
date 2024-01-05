@@ -31,7 +31,8 @@ This Python application allows users to convert CSV files into SQLite databases.
 
 ## Installation
 
-To set up the CSV to SQLite Converter on your local machine, first make sure you are running Python 3.x and install:
-
-1. **tkinter**
-2. SQLAlchemy
+- This app runs as a local fat client. You will need to use a Python IDE or compiler of your choice. Make sure you are running Python 3.x and you have the **tkinter** and SQLAlchemy packages installed in your Python environment.   
+- The file `completed_script_with_checksumhashing.py`is what you need to compile to generate the fat client instance. This is the main monolithic script that generates the app once compiled. You can also compile it by calling the script name using WSL or your native linux environment, provided you have Python 3.x installed.
+- The script `csvparsing_and_sqlitefile_creator.py` does NOT have SHA-256 checksum hashing validation. It needs to be compiled just the same as `completed_script_with_checksumhashing.py`. I made this script to make it easier for folks to implement the core app into their environment of choice. It runs faster due to the lack of the checksum hashing feature. 
+- The script and `datatypedefinition_gui_v1.py` contains some core logic but no data validation. I made this to help others implement the drop-down menu feature that assigns the selected datatype to the SQLite db table. 
+- The script `tkintergui_template_basic.py` contains the basic GUI skeleton layout of the app. Core logic does not exist here. I made this to make it easy for others to import the GUI layout and implementing it in some other environment of their choice.
