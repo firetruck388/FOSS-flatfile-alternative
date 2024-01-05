@@ -27,12 +27,20 @@ This Python application allows users to convert CSV files into SQLite databases.
 12. ![image](https://github.com/enrimarini/FOSS-flatfile-alternative/assets/98195595/dbcd9248-ca6b-4a81-af09-2d4030bbf801)
 13. **Integrity Check**: After conversion, an integrity check is performed, validating the checksum for each record against the original CSV data. This message printout currently only shows inside the Python console but can be made to print to the tkinter GUI.
 14. ![image](https://github.com/enrimarini/FOSS-flatfile-alternative/assets/98195595/a08ee873-cc03-4905-8fcb-33d37c48e6fc)
+15. To parse another CSV file, simple click the 'Browse' button at the top of the GUI and repeat the steps above. Each run through the app generates a new SQLite db file with a unique name. The naming convention of the SQLite file uses current datetime stamp down to the millisecond. 
 
 
 ## Installation
 
 - This app runs as a local fat client. You will need to use a Python IDE or compiler of your choice. Make sure you are running Python 3.x and you have the **tkinter** and SQLAlchemy packages installed in your Python environment.   
-- The file `completed_script_with_checksumhashing.py`is what you need to compile to generate the fat client instance. This is the main monolithic script that generates the app once compiled. You can also compile it by calling the script name using WSL or your native linux environment, provided you have Python 3.x installed.
+- The file `completed_script_with_checksumhashing.py` is what you need to compile to generate the fat client instance. This is the main monolithic script that generates the app once compiled. You can also compile it by calling the script name using WSL or your native linux environment, provided you have Python 3.x installed.
 - The script `csvparsing_and_sqlitefile_creator.py` does NOT have SHA-256 checksum hashing validation. It needs to be compiled just the same as `completed_script_with_checksumhashing.py`. I made this script to make it easier for folks to implement the core app into their environment of choice. It runs faster due to the lack of the checksum hashing feature. 
 - The script and `datatypedefinition_gui_v1.py` contains some core logic but no data validation. I made this to help others implement the drop-down menu feature that assigns the selected datatype to the SQLite db table. 
 - The script `tkintergui_template_basic.py` contains the basic GUI skeleton layout of the app. Core logic does not exist here. I made this to make it easy for others to import the GUI layout and implementing it in some other environment of their choice.
+
+## Architecture Assumptions & Choices
+
+- The focus of this app was to implement the core functionality first and foremost in monolithic manner for easier compiling and execution. 
+- Core functionality consists of checksum hashing, data sampling, and row count data validation to ensure integrity of data being migrated from CSV file onto table stored inside SQLite db file.
+- Currently the `completed_script_with_checksumhashing.py` script can parse multiple CSV files while running a single tkinter instance.
+- Future design work will include deleting old SQlite db files or stashing in an archive somewhere; using `tkinter pack_forget` to hide GUI buttons until they are relevant; separating methods into different python files; identify existing db tables that align with the CSV file and inserting records onto said table starting from the last record. 
