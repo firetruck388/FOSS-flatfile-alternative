@@ -11,7 +11,7 @@ This Python application allows users to convert CSV files into SQLite databases.
 - **Checksum Validation**: Ensures data integrity by validating the checksum of each record.
 - **Data Type Selection**: Allows users to define the data type for each CSV column.
 
-## How to Use
+## How to Use the GUI App After Compiling `completed_script_with_checksumhashing.py`
 
 1. **Select a CSV File**: Use the 'Browse' button to choose a CSV file from your filesystem.
 2. ![image](https://github.com/enrimarini/FOSS-flatfile-alternative/assets/98195595/5190548a-8ea5-4849-bfb0-2e0491b88aad)
